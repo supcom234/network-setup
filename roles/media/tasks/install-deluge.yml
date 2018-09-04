@@ -1,0 +1,35 @@
+- name: Install wget
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - wget
+    - epel-release
+
+- name: Download deluge RPM and EPEL rpm
+  get_url:
+    url: "{{ item }}"
+    dest: /home
+  with_items:
+    - http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-5.el7.nux.noarch.rpm    
+
+- name: Install nginx rpm from a local file
+  yum:
+    name: /home/nux-dextop-release-0-5.el7.nux.noarch.rpm
+    state: present
+
+- name: Install Deluge Web
+  yum:
+    name: deluge-web
+
+- name: Start deluge web service  
+  systemd:
+    daemon_reload: yes
+    enabled: yes
+    name: deluge-web.service
+    state: restarted
+
+- name: Open firewalld port 8112 for service
+  firewalld:
+    port: 8112/tcp
+    state: enabled

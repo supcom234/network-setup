@@ -1,0 +1,11 @@
+[Unit]
+Description=Nzbget Daemon
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/nzbget/nzbget -D
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target

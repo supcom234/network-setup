@@ -1,0 +1,5 @@
+---
+# Main yaml file for installing the media role
+#- import_tasks: install-sonarr.yml
+#- import_tasks: install-deluge.yml
+- import_tasks: install-nzbget.yml
