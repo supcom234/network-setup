@@ -1,114 +1,103 @@
-- name: Upgrade all packages
-  yum:
-    name: '*'
-    state: latest
 
-- name: Add epel rpm
-  yum:
-    name: epel-release
-    state: present
-
-- name: Add RPM key
-  rpm_key:
-    state: present
-    key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
-
-- name: Add Sonarr repository
-  yum_repository:
-    name: sonarr
-    description: Sonarr repo
-    baseurl: http://download.mono-project.com/repo/centos/
-
-- name: Install Sonarr packages
-  yum:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - wget 
-    - mediainfo 
-    - libzen 
-    - libmediainfo 
-    - curl 
-    - gettext 
-    - mono-core 
-    - mono-devel 
-    - sqlite.x86_64
-    - git 
-    - par2cmdline 
-    - p7zip 
-    - unar 
-    - unzip 
-    - tar 
-    - gcc 
-    - python-feedparser 
-    - python-configobj 
-    - python-cheetah 
-    - python-dbus 
-    - python-devel 
-    - libxslt-devel
-
-- name: Add sonarr group
-  group:
-    name: sonarr
-    state: present
-
-- name: Add sonarr user
-  user:
-    name: sonarr
-    groups: sonarr
-    shell: /sbin/nologin
-    append: yes
-    comment: "sonarr nologin User"
-    state: present
-
-- name: State sonarr exists example.
+- name: Stat sonarr exists.
   stat:
     path: /opt/sonarr
   register: sonarr_reg
 
-- name: Remove Sonarr directory
-  file:
-    path: /opt/sonarr
-    state: absent
-  when: sonarr_reg.stat.exists
+- name: Install Sonarr
+  block:
+  - name: Add RPM key
+    rpm_key:
+      state: present
+      key: "http://keyserver.ubuntu.com/pks/lookup?op=get&search=0x3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF"
 
-- name: Create Sonarr directories
-  file:  
-    path: /opt/sonarr/bin
-    state: directory
+  - name: Add Sonarr repository
+    yum_repository:
+      name: sonarr
+      description: Sonarr repo
+      baseurl: http://download.mono-project.com/repo/centos/
 
-- name: Unarchive sonarr
-  unarchive:
-    src: "http://update.sonarr.tv/v2/master/mono/NzbDrone.master.tar.gz"
-    remote_src: yes
-    dest: /opt
+  - name: Install Sonarr packages
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - wget 
+      - mediainfo 
+      - libzen 
+      - libmediainfo 
+      - curl 
+      - gettext 
+      - mono-core 
+      - mono-devel 
+      - sqlite.x86_64
+      - git 
+      - par2cmdline 
+      - p7zip 
+      - unar 
+      - unzip 
+      - tar 
+      - gcc 
+      - python-feedparser 
+      - python-configobj 
+      - python-cheetah 
+      - python-dbus 
+      - python-devel 
+      - libxslt-devel
 
-- name: Move files into proper place
-  shell: mv /opt/NzbDrone/* /opt/sonarr/bin    
+  - name: Add sonarr group
+    group:
+      name: sonarr
+      state: present
 
-- name: Set directory permissions to sonarr user sonarr group
-  file:
-    path: /opt/sonarr
-    owner: sonarr
-    group: sonarr
-    recurse: yes
+  - name: Add sonarr user
+    user:
+      name: sonarr
+      groups: sonarr
+      shell: /sbin/nologin
+      append: yes
+      comment: "sonarr nologin User"
+      state: present
 
-- name: Remove NzbDrone directory
-  file:
-    path: /opt/NzbDrone
-    state: absent
+  - name: Create Sonarr directories
+    file:  
+      path: /opt/sonarr/bin
+      state: directory
 
-- name: Copy systemd sonarr service file
-  copy:
-    src: files/systemd-sonarr
-    dest: /etc/systemd/system/sonarr.service
+  - name: Unarchive sonarr
+    unarchive:
+      src: "http://update.sonarr.tv/v2/master/mono/NzbDrone.master.tar.gz"
+      remote_src: yes
+      dest: /opt
 
-- name: Enable sonarr service and restart it
-  systemd:
-    daemon_reload: yes
-    enabled: yes
-    name: sonarr.service
-    state: restarted
+  - name: Move files into proper place
+    shell: mv /opt/NzbDrone/* /opt/sonarr/bin    
+
+  - name: Set directory permissions to sonarr user sonarr group
+    file:
+      path: /opt/sonarr
+      owner: sonarr
+      group: sonarr
+      recurse: yes
+
+  - name: Remove NzbDrone directory
+    file:
+      path: /opt/NzbDrone
+      state: absent
+
+  - name: Copy systemd sonarr service file
+    copy:
+      src: files/systemd-sonarr
+      dest: /etc/systemd/system/sonarr.service
+
+  - name: Enable sonarr service and start it
+    systemd:
+      daemon_reload: yes
+      enabled: yes
+      name: sonarr.service
+      state: started
+      
+  when: sonarr_reg.stat.exists == False
 
 - name: Open firewalld port 8989 for service
   firewalld:

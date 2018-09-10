@@ -1,0 +1,30 @@
+---
+# Installs the plex media server.
+
+- name: Copy systemd sonarr service file
+  copy:
+    src: files/plex.repo
+    dest: /etc/yum.repos.d/plex.repo
+
+- name: Install Plex Media server package
+  yum:
+    name: plexmediaserver
+    state: present
+
+- name: Enable Plex Media server.
+  systemd:    
+    enabled: yes
+    name: plexmediaserver.service
+    state: started
+    
+- name: Copy plex firewalld port configuration
+  copy:
+    src: files/plexmediaserver.xml
+    dest: /etc/firewalld/services/plexmediaserver.xml
+
+- name: Enabled firewalld plexmedia port mappings
+  command: firewall-cmd --add-service=plexmediaserver --permanent
+
+- name: Reload Firewalld
+  command: firewall-cmd --reload
+  

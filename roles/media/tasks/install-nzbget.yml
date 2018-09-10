@@ -1,44 +1,53 @@
-- name: Download NZBget
-  get_url:
-    url: https://github.com/nzbget/nzbget/releases/download/v20.0/nzbget-20.0-bin-linux.run
-    dest: /home
-    mode: 0755  
+- name: Stat sonarr exists.
+  stat:
+    path: /opt/nzbget/nzbget
+  register: nzbget_reg
 
 - name: Install NZBGet
-  shell: /home/nzbget-20.0-bin-linux.run --destdir /opt/nzbget
+  block:
+  - name: Download NZBget
+    get_url:
+      url: https://github.com/nzbget/nzbget/releases/download/v20.0/nzbget-20.0-bin-linux.run
+      dest: /home
+      mode: 0755  
 
-- name: Add nzbget group
-  group:
-    name: nzbget
-    state: present
+  - name: Run the instlaler
+    shell: /home/nzbget-20.0-bin-linux.run --destdir /opt/nzbget
 
-- name: Add nzbget user
-  user:
-    name: nzbget
-    groups: nzbget
-    shell: /sbin/nologin
-    append: yes
-    comment: "nzbget nologin User"
-    state: present
+  # - name: Add nzbget group
+  #   group:
+  #     name: nzbget
+  #     state: present
 
-- name: Set directory permissions to nzbget user nzbget group
-  file:
-    path: /opt/nzbget
-    owner: nzbget
-    group: nzbget
-    recurse: yes
+  # - name: Add nzbget user
+  #   user:
+  #     name: nzbget
+  #     groups: nzbget
+  #     shell: /sbin/nologin
+  #     append: yes
+  #     comment: "nzbget nologin User"
+  #     state: present
 
-- name: Copy systemd sonarr service file
-  copy:
-    src: files/systemd-nzbget
-    dest: /etc/systemd/system/nzbget.service
+  # - name: Set directory permissions to nzbget user nzbget group
+  #   file:
+  #     path: /opt/nzbget
+  #     owner: nzbget
+  #     group: nzbget
+  #     recurse: yes
 
-- name: Enable nzbget service and restart it
-  systemd:
-    daemon_reload: yes
-    enabled: yes
-    name: nzbget.service
-    state: restarted
+  - name: Copy nzbget service file
+    copy:
+      src: files/systemd-nzbget
+      dest: /etc/systemd/system/nzbget.service
+
+  - name: Enable nzbget service and start it
+    systemd:
+      daemon_reload: yes
+      enabled: yes
+      name: nzbget.service
+      state: started
+
+  when: nzbget_reg.stat.exists == False
 
 - name: Open firewalld port 6789 for service
   firewalld:
