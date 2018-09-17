@@ -1,6 +1,11 @@
-- name: Stat sonarr exists.
+---
+# Installs nzbget 
+# Default username: nzbget 
+# Default Password: tegbzn6789
+
+- name: Stat nzbget exists.
   stat:
-    path: /opt/nzbget/nzbget
+    path: "{{ nzbget_install_dir }}/nzbget"
   register: nzbget_reg
 
 - name: Install NZBGet
@@ -12,7 +17,7 @@
       mode: 0755  
 
   - name: Run the instlaler
-    shell: /home/nzbget-20.0-bin-linux.run --destdir /opt/nzbget
+    shell: "/home/nzbget-20.0-bin-linux.run --destdir {{ nzbget_install_dir }}"
 
   # - name: Add nzbget group
   #   group:
@@ -30,15 +35,16 @@
 
   # - name: Set directory permissions to nzbget user nzbget group
   #   file:
-  #     path: /opt/nzbget
+  #     path: "{{ nzbget_install_dir }}"
   #     owner: nzbget
   #     group: nzbget
   #     recurse: yes
 
   - name: Copy nzbget service file
-    copy:
-      src: files/systemd-nzbget
+    template:
+      src: templates/systemd-nzbget
       dest: /etc/systemd/system/nzbget.service
+      mode: 0644
 
   - name: Enable nzbget service and start it
     systemd:
@@ -53,3 +59,12 @@
   firewalld:
     port: 6789/tcp
     state: enabled
+    permanent: true
+    immediate: true
+
+- name: Open firewalld port 563 for service
+  firewalld:
+    port: 563/tcp
+    state: enabled
+    permanent: true
+    immediate: true

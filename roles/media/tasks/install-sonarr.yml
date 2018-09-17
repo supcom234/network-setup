@@ -1,7 +1,7 @@
 
 - name: Stat sonarr exists.
   stat:
-    path: /opt/sonarr
+    path: "{{ sonar_install_dir }}"
   register: sonarr_reg
 
 - name: Install Sonarr
@@ -61,7 +61,7 @@
 
   - name: Create Sonarr directories
     file:  
-      path: /opt/sonarr/bin
+      path: "{{ sonar_install_dir }}/bin"
       state: directory
 
   - name: Unarchive sonarr
@@ -71,11 +71,11 @@
       dest: /opt
 
   - name: Move files into proper place
-    shell: mv /opt/NzbDrone/* /opt/sonarr/bin    
+    shell: "mv /opt/NzbDrone/* {{ sonar_install_dir }}/bin"
 
   - name: Set directory permissions to sonarr user sonarr group
     file:
-      path: /opt/sonarr
+      path: "{{ sonar_install_dir }}"
       owner: sonarr
       group: sonarr
       recurse: yes
@@ -86,9 +86,10 @@
       state: absent
 
   - name: Copy systemd sonarr service file
-    copy:
-      src: files/systemd-sonarr
+    template:
+      src: templates/systemd-sonarr
       dest: /etc/systemd/system/sonarr.service
+      mode: 0644    
 
   - name: Enable sonarr service and start it
     systemd:
@@ -103,3 +104,5 @@
   firewalld:
     port: 8989/tcp
     state: enabled
+    permanent: true
+    immediate: true

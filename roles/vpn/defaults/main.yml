@@ -1,0 +1,11 @@
+---
+#Available choices for PIA exit_node value.
+
+#AU Melbourne.ovpn  CA Toronto.ovpn      Finland.ovpn    Israel.ovpn       New Zealand.ovpn   Spain.ovpn        UK Manchester.ovpn   US East.ovpn           US Seattle.ovpn
+#Austria.ovpn       CA Vancouver.ovpn    France.ovpn     Italy.ovpn        Norway.ovpn        Sweden.ovpn       UK Southampton.ovpn  US Florida.ovpn        US Silicon Valley.ovpn
+#AU Sydney.ovpn     Czech Republic.ovpn  Hong Kong.ovpn  Japan.ovpn        Poland.ovpn        Switzerland.ovpn  US Atlanta.ovpn      US Houston.ovpn        US Texas.ovpn
+#Belgium.ovpn       DE Berlin.ovpn       Hungary.ovpn    Luxembourg.ovpn   Romania.ovpn       Turkey.ovpn       US California.ovpn   US Las Vegas.ovpn      US Washington DC.ovpn
+#Brazil.ovpn        DE Frankfurt.ovpn    India.ovpn      Mexico.ovpn       Singapore.ovpn     UAE.ovpn          US Chicago.ovpn      US Midwest.ovpn        US West.ovpn
+#CA Montreal.ovpn   Denmark.ovpn         Ireland.ovpn    Netherlands.ovpn  South Africa.ovpn  UK London.ovpn    US Denver.ovpn       US New York City.ovpn
+
+exit_node: Luxembourg.ovpn

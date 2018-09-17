@@ -11,6 +11,10 @@
     name: epel-release
     state: present
 
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
 - name: Ensure that firewalld is running and is enabled
   systemd:
     enabled: yes
@@ -20,3 +24,4 @@
 - import_tasks: install-sonarr.yml
 - import_tasks: install-nzbget.yml
 - import_tasks: install-plexmedia.yml
+- import_tasks: install-couchpotato.yml

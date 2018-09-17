@@ -4,9 +4,9 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-ExecStart=/opt/nzbget/nzbget -D
-ExecStop=/opt/nzbget/nzbget -Q
-ExecReload=/opt/nzbget/nzbget -O
+ExecStart={{ nzbget_install_dir }}/nzbget -D
+ExecStop={{ nzbget_install_dir }}/nzbget -Q
+ExecReload={{ nzbget_install_dir }}/nzbget -O
 TimeoutStopSec=20
 
 [Install]

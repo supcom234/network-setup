@@ -1,0 +1,46 @@
+- name: Stat couch potato exists.
+  stat:
+    path: "{{ couch_potato_install_dir }}"
+  register: couch_reg
+
+- name: Download and install Couch Potato
+  block:
+  - name: Install Couch Potato requirements
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - git
+
+  - name: Create Couch Potato directory
+    file:
+      path: "{{ couch_potato_install_dir }}"
+      state: directory
+
+  - name: Clone Couch Potato repository
+    git:
+      dest: "{{ couch_potato_install_dir }}"
+      repo: https://github.com/CouchPotato/CouchPotatoServer.git
+
+  - name: Copy systemd Couch Potato service file    
+    template:
+      src: templates/systemd-couchpotato
+      dest: /etc/systemd/system/couch-potato.service
+      mode: 0644
+
+  - name: Enable Couch Potato service and start it
+    systemd:
+      daemon_reload: yes
+      enabled: yes
+      name: couch-potato.service
+      state: started
+
+  when: couch_reg.stat.exists == False
+
+- name: Open firewalld port 5050 for service
+  firewalld:
+    port: 5050/tcp
+    state: enabled
+    permanent: true
+    immediate: true
+  

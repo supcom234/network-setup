@@ -9,5 +9,6 @@
 - name: Setup Media Server
   hosts: media-server
   roles:
-    - media
+    # - media
+    - vpn
   tags: media

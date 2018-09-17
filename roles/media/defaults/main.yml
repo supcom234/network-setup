@@ -1,0 +1,4 @@
+# The variables for this role are stored in this file
+sonar_install_dir: /opt/sonarr
+couch_potato_install_dir: /opt/couchpotato
+nzbget_install_dir: /opt/nzbget

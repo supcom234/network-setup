@@ -1,0 +1,79 @@
+---
+# Installs OpenVPN
+
+- name: Upgrade all packages
+  yum:
+    name: '*'
+    state: latest
+
+- name: Add epel repository
+  yum:
+    name: epel-release
+    state: present
+
+- name: Install OpenVPN 
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - openvpn
+    - unzip
+    - curl
+
+- name: Download OpenVPN PIA configurations
+  get_url:
+    url: https://www.privateinternetaccess.com/openvpn/openvpn.zip
+    dest: /etc/openvpn
+
+- name: Extract the ZIP file
+  unarchive:
+    src: /etc/openvpn/openvpn.zip
+    dest: /etc/openvpn
+    remote_src: yes
+
+- name: Copy plex repo file
+  copy:
+    src: files/cred.conf
+    dest: /etc/openvpn/cred.conf
+    owner: root
+    group: root
+    mode: 0400
+
+- name: Create server.conf symlink
+  file:
+    follow: yes
+    force: no
+    state: link
+    src: "/etc/openvpn/{{ exit_node }}"
+    dest: /etc/openvpn/server.conf
+
+- name: Setup auth user pass to point to cred.conf
+  replace:
+    path: "/etc/openvpn/{{ exit_node }}"
+    regexp: 'auth-user-pass'
+    replace: 'auth-user-pass cred.conf'
+
+- name: Set name server 209.222.18.222
+  lineinfile:
+    dest: /etc/resolv.conf
+    regexp: "^nameserver 209[.]222[.]18[.]222"
+    line: "nameserver 209.222.18.222"
+    state: present
+
+- name: Set name server 209.222.18.218
+  lineinfile:
+    dest: /etc/resolv.conf
+    regexp: "^nameserver 209[.]222[.]18[.]218"
+    line: "nameserver 209.222.18.218"
+    state: present
+
+- name: Reset SELinux security context labels
+  shell: restorecon -Rv /etc/openvpn
+
+- name: Enable Openvpn service and start it
+  systemd:
+    enabled: yes
+    name: openvpn@server.service
+    state: started
+
+# curl ipecho.net/plain ; echo

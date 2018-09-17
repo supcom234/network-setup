@@ -1,7 +1,7 @@
 all:
   hosts:
     media-server:
-      ansible_host: 192.168.1.27
+      ansible_host: 192.168.1.150
       ansible_user: root
       ansible_ssh_pass: vagrant
 
