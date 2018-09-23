@@ -21,7 +21,22 @@
     name: firewalld.service
     state: started
 
+- name: Add media group
+  group:
+    name: "{{ media_group }}"
+    state: present
+
+- name: Setup media directories
+  file:
+    path: "{{ item }}"
+    group: "{{ media_group }}"
+    owner: root
+    state: directory
+    mode: 0775
+  with_items:
+    - "{{ data_dirs }}"
+
 - import_tasks: install-sonarr.yml
 - import_tasks: install-nzbget.yml
 - import_tasks: install-plexmedia.yml
-- import_tasks: install-couchpotato.yml
+- import_tasks: install-radarr.yml

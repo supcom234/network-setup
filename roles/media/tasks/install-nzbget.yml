@@ -5,7 +5,7 @@
 
 - name: Stat nzbget exists.
   stat:
-    path: "{{ nzbget_install_dir }}/nzbget"
+    path: "{{ nzbget.install_dir }}/nzbget"
   register: nzbget_reg
 
 - name: Install NZBGet
@@ -17,54 +17,49 @@
       mode: 0755  
 
   - name: Run the instlaler
-    shell: "/home/nzbget-20.0-bin-linux.run --destdir {{ nzbget_install_dir }}"
+    shell: "/home/nzbget-20.0-bin-linux.run --destdir {{ nzbget.install_dir }}"
 
-  # - name: Add nzbget group
-  #   group:
-  #     name: nzbget
-  #     state: present
+  - name: Add nzbget group
+    group:
+      name: "{{ nzbget.group }}"
+      state: present
 
-  # - name: Add nzbget user
-  #   user:
-  #     name: nzbget
-  #     groups: nzbget
-  #     shell: /sbin/nologin
-  #     append: yes
-  #     comment: "nzbget nologin User"
-  #     state: present
+  - name: Add nzbget user
+    user:
+      name: "{{ nzbget.user }}"
+      groups: "{{ nzbget.group }},{{ media_group }}"
+      shell: /sbin/nologin
+      append: yes
+      comment: "nzbget nologin User"
+      state: present
 
-  # - name: Set directory permissions to nzbget user nzbget group
-  #   file:
-  #     path: "{{ nzbget_install_dir }}"
-  #     owner: nzbget
-  #     group: nzbget
-  #     recurse: yes
+  - name: Set directory permissions to nzbget user nzbget group
+    file:
+      path: "{{ nzbget.install_dir }}"
+      owner: "{{ nzbget.user }}"
+      group: "{{ nzbget.group }}"
+      recurse: yes
 
   - name: Copy nzbget service file
     template:
       src: templates/systemd-nzbget
-      dest: /etc/systemd/system/nzbget.service
+      dest: "/etc/systemd/system/{{ nzbget.service_name }}"
       mode: 0644
 
   - name: Enable nzbget service and start it
     systemd:
       daemon_reload: yes
       enabled: yes
-      name: nzbget.service
+      name: "{{ nzbget.service_name }}"
       state: started
 
   when: nzbget_reg.stat.exists == False
 
-- name: Open firewalld port 6789 for service
+- name: Open firewalld ports nzbget service
   firewalld:
-    port: 6789/tcp
+    port: "{{ item }}"
     state: enabled
     permanent: true
     immediate: true
-
-- name: Open firewalld port 563 for service
-  firewalld:
-    port: 563/tcp
-    state: enabled
-    permanent: true
-    immediate: true
+  with_items:
+    - "{{ nzbget.ports }}"

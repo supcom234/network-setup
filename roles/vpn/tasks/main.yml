@@ -19,17 +19,29 @@
     - openvpn
     - unzip
     - curl
+    - net-tools
+
+- name: Cred exists
+  stat:
+    path: /etc/openvpn/openvpn.zip
+  register: openvpen_reg
 
 - name: Download OpenVPN PIA configurations
   get_url:
     url: https://www.privateinternetaccess.com/openvpn/openvpn.zip
     dest: /etc/openvpn
+  when: openvpen_reg.stat.exists == False
 
 - name: Extract the ZIP file
   unarchive:
     src: /etc/openvpn/openvpn.zip
     dest: /etc/openvpn
     remote_src: yes
+
+- name: Cred exists
+  stat:
+    path: /etc/openvpn/cred.conf
+  register: openvpen_cred_reg
 
 - name: Copy plex repo file
   copy:
@@ -38,6 +50,7 @@
     owner: root
     group: root
     mode: 0400
+  when: openvpen_cred_reg.stat.exists == False
 
 - name: Create server.conf symlink
   file:
@@ -67,13 +80,41 @@
     line: "nameserver 209.222.18.218"
     state: present
 
-- name: Reset SELinux security context labels
-  shell: restorecon -Rv /etc/openvpn
+- name: Copy NetworkManager conf
+  copy:
+    src: files/NetworkManager.conf
+    dest: /etc/NetworkManager/NetworkManager.conf
+
+- name: Restart Network Manager to read new config file.
+  systemd:    
+    name: NetworkManager.service
+    state: restarted
+
+# - name: Reset SELinux security context labels
+#   shell: restorecon -Rv /etc/openvpn
 
 - name: Enable Openvpn service and start it
   systemd:
     enabled: yes
     name: openvpn@server.service
     state: started
+
+- name: Copy killswitch over to remote
+  template:
+    src: templates/killswitch.sh
+    dest: "/root/killswitch.sh"
+    mode: 0744  
+    owner: root
+    group: root
+
+- name: Setup cron entry for kill switch
+  cron:
+    job: "/root/killswitch.sh"
+    day: "*"
+    hour: "*"
+    minute: "*"
+    month: "*"
+    weekday: "*"
+    state: present
 
 # curl ipecho.net/plain ; echo

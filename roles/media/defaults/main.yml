@@ -1,4 +1,38 @@
-# The variables for this role are stored in this file
-sonar_install_dir: /opt/sonarr
-couch_potato_install_dir: /opt/couchpotato
-nzbget_install_dir: /opt/nzbget
+# This is the group that all the application users will be apart of 
+#so that they have appropriate access to data folders.
+media_group: media
+
+data_dirs: 
+  - "/data/movies"
+  - "/data/tv"
+
+plex:
+  user: plex
+  group: plex
+  install_dir: /usr/lib/plexmediaserver
+  service_name: plexmediaserver.service  
+
+sonarr:
+  user: sonarr
+  group: sonarr
+  install_dir: /opt/sonarr
+  service_name: sonarr.service
+  ports:
+    - "8989/tcp"
+
+radarr:
+  user: radarr
+  group: radarr
+  install_dir: /opt/Radarr
+  service_name: radarr.service
+  ports:
+    - "7878/tcp"
+
+nzbget:
+  user: nzbget
+  group: nzbget
+  install_dir: /opt/nzbget
+  service_name: nzbget.service
+  ports:
+    - "6789/tcp"
+    - "563/tcp"

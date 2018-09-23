@@ -1,0 +1,70 @@
+
+- name: Radarr radarr exists.
+  stat:
+    path: "{{ radarr.install_dir }}"
+  register: radarr_reg
+
+- name: Install Radarr
+  block:
+  
+  - name: Install Radarr packages
+    yum:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - mono-core 
+      - mono-devel 
+      - mono-locale-extras 
+      - curl 
+      - mediainfo
+
+  - name: Add radarr group
+    group:
+      name: "{{ radarr.group }}"
+      state: present
+
+  - name: Add radarr user
+    user:
+      name: "{{ radarr.user }}"
+      groups: "{{ radarr.group }},{{ media_group }}"
+      shell: /sbin/nologin
+      append: yes
+      comment: "radarr nologin User"
+      state: present
+
+  - name: Unarchive radarr
+    unarchive:
+      src: "https://github.com/Radarr/Radarr/releases/download/v0.2.0.1120/Radarr.develop.0.2.0.1120.linux.tar.gz"
+      remote_src: yes
+      dest: /opt
+
+  - name: Set directory permissions to sonarr user sonarr group
+    file:
+      path: "{{ radarr.install_dir }}"
+      owner: "{{ radarr.user }}"
+      group: "{{ radarr.group }}"
+      recurse: yes
+
+  - name: Copy systemd radarr service file
+    template:
+      src: templates/systemd-radarr
+      dest: "/etc/systemd/system/{{ radarr.service_name }}"
+      mode: 0644    
+
+  - name: Enable radarr service and start it
+    systemd:
+      daemon_reload: yes
+      enabled: yes
+      name: "{{ radarr.service_name }}"
+      state: started
+      
+  when: radarr_reg.stat.exists == False
+
+- name: Open firewalld ports for radarr
+  firewalld:
+    port: "{{ item }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  with_items:
+    - "{{ radarr.ports }}"

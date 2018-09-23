@@ -1,7 +1,7 @@
 
 - name: Stat sonarr exists.
   stat:
-    path: "{{ sonar_install_dir }}"
+    path: "{{ sonarr.install_dir }}"
   register: sonarr_reg
 
 - name: Install Sonarr
@@ -52,8 +52,8 @@
 
   - name: Add sonarr user
     user:
-      name: sonarr
-      groups: sonarr
+      name: "{{ sonarr.user }}"
+      groups: "{{ sonarr.group }},{{ media_group }}"
       shell: /sbin/nologin
       append: yes
       comment: "sonarr nologin User"
@@ -61,7 +61,7 @@
 
   - name: Create Sonarr directories
     file:  
-      path: "{{ sonar_install_dir }}/bin"
+      path: "{{ sonarr.install_dir }}/bin"
       state: directory
 
   - name: Unarchive sonarr
@@ -71,11 +71,11 @@
       dest: /opt
 
   - name: Move files into proper place
-    shell: "mv /opt/NzbDrone/* {{ sonar_install_dir }}/bin"
+    shell: "mv /opt/NzbDrone/* {{ sonarr.install_dir }}/bin"
 
   - name: Set directory permissions to sonarr user sonarr group
     file:
-      path: "{{ sonar_install_dir }}"
+      path: "{{ sonarr.install_dir }}"
       owner: sonarr
       group: sonarr
       recurse: yes
@@ -88,21 +88,23 @@
   - name: Copy systemd sonarr service file
     template:
       src: templates/systemd-sonarr
-      dest: /etc/systemd/system/sonarr.service
+      dest: "/etc/systemd/system/{{ sonarr.service_name }}"
       mode: 0644    
 
   - name: Enable sonarr service and start it
     systemd:
       daemon_reload: yes
       enabled: yes
-      name: sonarr.service
+      name: "{{ sonarr.service_name }}"
       state: started
       
   when: sonarr_reg.stat.exists == False
 
-- name: Open firewalld port 8989 for service
+- name: Open firewalld ports service
   firewalld:
-    port: 8989/tcp
+    port: "{{ item }}"
     state: enabled
     permanent: true
     immediate: true
+  with_items:
+    - "{{ sonarr.ports }}"

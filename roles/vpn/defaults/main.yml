@@ -8,4 +8,4 @@
 #Brazil.ovpn        DE Frankfurt.ovpn    India.ovpn      Mexico.ovpn       Singapore.ovpn     UAE.ovpn          US Chicago.ovpn      US Midwest.ovpn        US West.ovpn
 #CA Montreal.ovpn   Denmark.ovpn         Ireland.ovpn    Netherlands.ovpn  South Africa.ovpn  UK London.ovpn    US Denver.ovpn       US New York City.ovpn
 
-exit_node: Luxembourg.ovpn
+exit_node: "US Texas.ovpn"

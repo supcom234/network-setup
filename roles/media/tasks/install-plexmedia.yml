@@ -3,7 +3,7 @@
 
 - name: Stat plexmedia exists.
   stat:
-    path: /usr/lib/plexmediaserver
+    path: "{{ plex.install_dir }}"
   register: plex_reg
 
 - name: Download and instlal plex media server.
@@ -18,10 +18,23 @@
       name: plexmediaserver
       state: present
 
+  - name: Adding media group to plex
+    user:
+      name: "{{ plex.user }}"
+      groups: "{{ media_group }}"
+      append: yes
+
+  - name: Set directory permissions to plex user plex group
+    file:
+      path: "{{ plex.install_dir }}"
+      owner: "{{ plex.user }}"
+      group: "{{ plex.group }}"
+      recurse: yes
+
   - name: Enable Plex Media server.
     systemd:    
       enabled: yes
-      name: plexmediaserver.service
+      name: "{{ plex.service_name }}"
       state: started      
 
   when: plex_reg.stat.exists == False
