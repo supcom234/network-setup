@@ -3,6 +3,8 @@ Description=Nzbget Daemon
 After=syslog.target network.target
 
 [Service]
+User={{ nzbget.user }}
+Group={{ media_group }}
 Type=forking
 ExecStart={{ nzbget.install_dir }}/nzbget -D
 ExecStop={{ nzbget.install_dir }}/nzbget -Q

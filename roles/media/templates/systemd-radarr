@@ -4,8 +4,7 @@ After=syslog.target network.target
 
 [Service]
 User={{ radarr.user }}
-Group={{ radarr.group }}
-
+Group={{ media_group }}
 Type=simple
 ExecStart=/usr/bin/mono --debug {{ radarr.install_dir }}/Radarr.exe -nobrowser
 TimeoutStopSec=20
